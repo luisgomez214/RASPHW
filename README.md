@@ -74,6 +74,7 @@ Problem 4: Write a function that returns the maximum value in the sequence repea
 
 Problem 6: Write a function that performs sequence reversal "autogeneratively". That is, it will take a sequence as input, and the sequence will contain a special token $ that marks the "end of the prompt". The text before the $ should be unchanged, and the text after the $ should be the text before the $ reversed (this text represents the model's response to the prompt). The code should be robuse to the case when the length of text after $ is not the same as the length of text before $. For example:
 
+```
 >> set example "hello$     "
 >> dollar_position = select_from_first(tokens, "$");
      selector: dollar_position
@@ -110,6 +111,7 @@ Problem 6: Write a function that performs sequence reversal "autogeneratively". 
 	 =  [h, e, l, l, o, $, o] (strings)
 >> reverse_sequence(tokens)("hello$XXXXXXXXXX");
 	 =  [h, e, l, l, o, $, o, l, l, e, h,  ,  ,  ,  ,  ] (strings)
+```
 
 Problem 6: Write a function that counts the number of times a certain token appears in the input sequence. For example:
 ```
