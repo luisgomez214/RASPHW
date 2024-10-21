@@ -73,42 +73,43 @@ Problem 4: Write a function that returns the maximum value in the sequence repea
 
 
 Problem 6: Write a function that performs sequence reversal "autogeneratively". That is, it will take a sequence as input, and the sequence will contain a special token $ that marks the "end of the prompt". The text before the $ should be unchanged, and the text after the $ should be the text before the $ reversed (this text represents the model's response to the prompt). The code should be robuse to the case when the length of text after $ is not the same as the length of text before $. For example:
-```
->> dollar_loc = select_from_first(tokens, "$");
-     selector: dollar_loc
- 	 Example:
- 			     h e l l o
- 			 h |          
- 			 e |          
- 			 l |          
- 			 l |          
- 			 o |          
->> pos_dollar = aggregate(dollar_loc, indices);
-     s-op: pos_dollar
- 	 Example: pos_dollar("hello") = [0]*5 (ints)
->> def second_half(seq) {
-..     return aggregate(select(indices, pos_dollar + pos_dollar - indices, ==), seq, " ");
-..   }
-     console function: second_half(seq)
->> def reverse_ag(seq) {
-..     return seq if indices <= pos_dollar else second_half(seq);
-..   }
-     console function: reverse_ag(seq)
->> reverse_ag(tokens);
-     s-op: out
- 	 Example: out("hello") = [h,  ,  ,  ,  ] (strings)
->> 
-.. 
->> reverse_ag(tokens)("hello$     ");
-	 =  [h, e, l, l, o, $, o, l, l, e, h] (strings)
->> reverse_ag(tokens)("hello$ ");
-	 =  [h, e, l, l, o, $, o] (strings)
->> reverse_ag(tokens)("hello$X");
-	 =  [h, e, l, l, o, $, o] (strings)
->> reverse_ag(tokens)("hello$XXXXXXXXXX");
-	 =  [h, e, l, l, o, $, o, l, l, e, h,  ,  ,  ,  ,  ] (strings)
-```
 
+>> set example "hello$     "
+>> dollar_position = select_from_first(tokens, "$");
+     selector: dollar_position
+ 	 Example:
+ 			     h e l l o $          
+ 			 h |           1          
+ 			 e |           1          
+ 			 l |           1          
+ 			 l |           1          
+ 			 o |           1          
+ 			 $ |           1          
+ 			   |           1          
+ 			   |           1          
+ 			   |           1          
+ 			   |           1          
+ 			   |           1          
+>>  dollar_indices = aggregate(dollar_position, indices);
+     s-op: dollar_indices
+ 	 Example: dollar_indices("hello$     ") = [5]*11 (ints)
+>> def get_second_part(seq) {
+..        reversed_part = aggregate(select(indices, dollar_indices + dollar_indices - indices, ==), seq, " ");
+..        return reversed_part;
+..   }
+     console function: get_second_part(seq)
+>> def reverse_sequence(seq) {
+..        return seq if indices <= dollar_indices else get_second_part(seq);
+..   }
+     console function: reverse_sequence(seq)
+>> reverse_sequence(tokens)("hello$     ");
+	 =  [h, e, l, l, o, $, o, l, l, e, h] (strings)
+>> reverse_sequence(tokens)("hello$ ");
+	 =  [h, e, l, l, o, $, o] (strings)
+>> reverse_sequence(tokens)("hello$X");
+	 =  [h, e, l, l, o, $, o] (strings)
+>> reverse_sequence(tokens)("hello$XXXXXXXXXX");
+	 =  [h, e, l, l, o, $, o, l, l, e, h,  ,  ,  ,  ,  ] (strings)
 
 Problem 6: Write a function that counts the number of times a certain token appears in the input sequence. For example:
 ```
@@ -162,7 +163,7 @@ Problem 8: Write a function that returns the letter (tokens) in the indices that
 
 ```
 selected_double_indices = select(indices, indices*2, ==);
-output_double = aggregate(selected_double_indices, tokens, "x");
+output_double = aggregate(selected_double_indices, tokens, ".");
 
 
 >> output_double("hello");
