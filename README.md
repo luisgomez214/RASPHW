@@ -52,3 +52,122 @@ Problem 3: Write a function that takes a sequence as input and "swaps everylette
 >> _swaplast(tokens)("ababab");
 	 =  [b, a, b, a, b, a] (strings)
 ```
+
+
+Problem 4: Write a function that returns the maximum value in the sequence repeated for every position. For example:
+```
+>> sorting = sort(tokens, tokens);
+     s-op: sorting
+ 	 Example: sorting("hello") = [e, h, l, l, o] (strings)
+>> lasttoken = length - 1;
+     s-op: lasttoken
+ 	 Example: lasttoken("hello") = [4]*5 (ints)
+>> def maxseq(seq) {
+..        return load_from_location(sorting, lasttoken);
+..        }
+     console function: maxseq(seq)
+>> maxseq(tokens)("ababcabab");
+	 =  [c]*9 (strings)
+```
+
+
+
+Problem 6: Write a function that performs sequence reversal "autogeneratively". That is, it will take a sequence as input, and the sequence will contain a special token $ that marks the "end of the prompt". The text before the $ should be unchanged, and the text after the $ should be the text before the $ reversed (this text represents the model's response to the prompt). The code should be robuse to the case when the length of text after $ is not the same as the length of text before $. For example:
+```
+>> dollar_loc = select_from_first(tokens, "$");
+     selector: dollar_loc
+ 	 Example:
+ 			     h e l l o
+ 			 h |          
+ 			 e |          
+ 			 l |          
+ 			 l |          
+ 			 o |          
+>> pos_dollar = aggregate(dollar_loc, indices);
+     s-op: pos_dollar
+ 	 Example: pos_dollar("hello") = [0]*5 (ints)
+>> def second_half(seq) {
+..     return aggregate(select(indices, pos_dollar + pos_dollar - indices, ==), seq, " ");
+..   }
+     console function: second_half(seq)
+>> def reverse_ag(seq) {
+..     return seq if indices <= pos_dollar else second_half(seq);
+..   }
+     console function: reverse_ag(seq)
+>> reverse_ag(tokens);
+     s-op: out
+ 	 Example: out("hello") = [h,  ,  ,  ,  ] (strings)
+>> 
+.. 
+>> reverse_ag(tokens)("hello$     ");
+	 =  [h, e, l, l, o, $, o, l, l, e, h] (strings)
+>> reverse_ag(tokens)("hello$ ");
+	 =  [h, e, l, l, o, $, o] (strings)
+>> reverse_ag(tokens)("hello$X");
+	 =  [h, e, l, l, o, $, o] (strings)
+>> reverse_ag(tokens)("hello$XXXXXXXXXX");
+	 =  [h, e, l, l, o, $, o, l, l, e, h,  ,  ,  ,  ,  ] (strings)
+```
+
+
+Problem 6: Write a function that counts the number of times a certain token appears in the input sequence. For example:
+```
+>>  def howmany(seq, atom){
+..        return selector_width(select(seq, atom, ==));
+..        }
+     console function: howmany(seq, atom)
+>> 
+.. 
+>> howmany(tokens, "a")("hello");
+	 =  [0]*5 (ints)
+>>  howmany(tokens, "h")("hello");
+	 =  [1]*5 (ints)
+>> howmany(tokens, "l")("hello");
+	 =  [2]*5 (ints)
+```
+
+
+Problem 7: Write a function that counts the number of times a certain token has appeared in the input sequence so far. For example:
+
+```
+>> mask_ag = select(indices, indices, <=);
+     selector: mask_ag
+ 	 Example:
+ 			     h e l l o
+ 			 h | 1        
+ 			 e | 1 1      
+ 			 l | 1 1 1    
+ 			 l | 1 1 1 1  
+ 			 o | 1 1 1 1 1
+>> 
+.. 
+>>  def howmany(seq, atom){
+..         count = round((indices + 1) * aggregate(mask_ag, indicator(seq == atom)));
+..         return aggregate(select(indices, indices, ==), count, "");
+..      }
+     console function: howmany(seq, atom)
+>> 
+.. 
+>> howmany(tokens, "a")("hello");
+	 =  [0]*5 (ints)
+>> howmany(tokens, "h")("hello");
+	 =  [1]*5 (ints)
+>>  howmany(tokens, "e")("hello");
+	 =  [0, 1, 1, 1, 1] (ints)
+>> howmany(tokens, "l")("hello");
+	 =  [0, 0, 1, 2, 2] (ints)
+```
+
+Problem 8: Write a function that returns the letter (tokens) in the indices that are odd. 
+
+```
+selected_double_indices = select(indices, indices*2, ==);
+output_double = aggregate(selected_double_indices, tokens, "x");
+
+
+>> output_double("hello");
+	 =  [h, l, o, ., .] (strings)
+
+>> output_double("oxnxlxyxpxrxixnxtxixnxgxoxdxdx");
+	 =  [o, n, l, y, p, r, i, n, t, i, n, g, o, d, d, ., ., ., ., ., ., ., ., ., ., ., ., ., ., .] (strings)
+```
